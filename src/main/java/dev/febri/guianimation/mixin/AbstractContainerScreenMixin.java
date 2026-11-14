@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Adds a short spring-like scale animation to the item attached to the cursor
- * when a player picks an item up from a container slot.
+ * Adds a restrained, single bounce to the item attached to the cursor when
+ * a player picks an item up from a container slot.
  */
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin {
@@ -44,7 +44,7 @@ public abstract class AbstractContainerScreenMixin {
     ) {
         ItemStack carried = this.menu.getCarried();
 
-        // Ignore count-only changes (for example, splitting a stack while dragging).
+        // Ignore count-only changes, such as splitting a stack while dragging.
         if (!carried.isEmpty()
                 && !ItemStack.isSameItemSameComponents(carried, this.universalGuiAnimation$lastCarried)) {
             this.universalGuiAnimation$bounceStartedAt = System.nanoTime() / 1_000_000L;
@@ -64,8 +64,8 @@ public abstract class AbstractContainerScreenMixin {
         }
 
         float progress = (float) elapsed / universalGuiAnimation$BOUNCE_DURATION_MS;
-        float bounce = (float) Math.sin(progress * Math.PI * 3.0D) * (1.0F - progress);
-        float scale = 1.0F + 0.24F * bounce;
+        float bounce = (float) Math.sin(progress * Math.PI * 2.0D) * (1.0F - progress);
+        float scale = 1.0F + 0.08F * bounce;
 
         Matrix3x2fStack pose = graphics.pose();
         pose.pushMatrix();
