@@ -52,7 +52,7 @@ public final class GuiAnimationClient implements ClientModInitializer {
             return;
         }
 
-        long elapsed = Math.max(0L, Util.getMillis() - startedAt);
+        long elapsed = Math.max(0L, nowMillis() - startedAt);
         if (elapsed >= SCREEN_FADE_DURATION_MS) {
             SCREEN_START_TIMES.remove(screen);
             return;
