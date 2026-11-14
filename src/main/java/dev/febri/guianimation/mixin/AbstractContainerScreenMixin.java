@@ -24,7 +24,7 @@ public abstract class AbstractContainerScreenMixin {
     protected AbstractContainerMenu menu;
 
     @Unique
-    private static final long universalGuiAnimation$BOUNCE_DURATION_MS = 280L;
+    private static final long universalGuiAnimation$universalGuiAnimation$BOUNCE_DURATION_MS = 280L;
 
     @Unique
     private ItemStack universalGuiAnimation$lastCarried = ItemStack.EMPTY;
@@ -59,11 +59,11 @@ public abstract class AbstractContainerScreenMixin {
 
         long elapsed = Math.max(0L,
                 System.nanoTime() / 1_000_000L - this.universalGuiAnimation$bounceStartedAt);
-        if (elapsed >= BOUNCE_DURATION_MS) {
+        if (elapsed >= universalGuiAnimation$BOUNCE_DURATION_MS) {
             return;
         }
 
-        float progress = (float) elapsed / BOUNCE_DURATION_MS;
+        float progress = (float) elapsed / universalGuiAnimation$BOUNCE_DURATION_MS;
         float bounce = (float) Math.sin(progress * Math.PI * 3.0D) * (1.0F - progress);
         float scale = 1.0F + 0.24F * bounce;
 
