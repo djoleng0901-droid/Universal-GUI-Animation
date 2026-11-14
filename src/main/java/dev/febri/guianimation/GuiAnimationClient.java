@@ -3,7 +3,6 @@ package dev.febri.guianimation;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.Util;
 
 import java.util.Collections;
 import java.util.Map;
@@ -29,7 +28,7 @@ public final class GuiAnimationClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            SCREEN_START_TIMES.put(screen, Util.getMillis());
+            SCREEN_START_TIMES.put(screen, nowMillis());
 
             if (REGISTERED_SCREENS.add(screen)) {
                 ScreenEvents.afterExtract(screen).register(
@@ -38,6 +37,10 @@ public final class GuiAnimationClient implements ClientModInitializer {
                 );
             }
         });
+    }
+
+    private static long nowMillis() {
+        return System.nanoTime() / 1_000_000L;
     }
 
     private static void renderScreenFade(
