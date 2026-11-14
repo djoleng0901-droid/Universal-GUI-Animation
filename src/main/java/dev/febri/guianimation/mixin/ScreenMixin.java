@@ -10,16 +10,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Gives every screen a short, subtle entrance from below into its normal
- * centered position. The small ease-out overshoot creates a restrained bounce.
+ * Gives every screen a centered zoom-in entrance, growing from invisible
+ * to its normal size with a subtle ease-out finish.
  */
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
     @Unique
-    private static final long universalGuiAnimation$ENTRANCE_DURATION_MS = 360L;
-
-    @Unique
-    private static final float universalGuiAnimation$START_OFFSET_RATIO = 0.12F;
+    private static final long universalGuiAnimation$ENTRANCE_DURATION_MS = 420L;
 
     @Unique
     private long universalGuiAnimation$entranceStartedAt = -1L;
@@ -53,22 +50,22 @@ public abstract class ScreenMixin {
         }
 
         float progress = (float) elapsed / universalGuiAnimation$ENTRANCE_DURATION_MS;
-        // Ease-out-back with a deliberately small overshoot.
+
+        // Ease-out-back: starts at zero (invisible), zooms smoothly to full size,
+        // then settles with a very subtle overshoot.
         float inverse = progress - 1.0F;
         float eased = 1.0F
-                + 2.2F * inverse * inverse * inverse
-                + 1.2F * inverse * inverse;
+                + 1.35F * inverse * inverse * inverse
+                + 0.35F * inverse * inverse;
+        float scale = Math.max(0.0F, eased);
 
         Screen screen = (Screen) (Object) this;
         float centerX = screen.width * 0.5F;
         float centerY = screen.height * 0.5F;
-        float offsetY = (1.0F - eased) * screen.height
-                * universalGuiAnimation$START_OFFSET_RATIO;
-        float scale = 0.985F + 0.015F * Math.min(1.0F, eased);
 
         Matrix3x2fStack pose = graphics.pose();
         pose.pushMatrix();
-        pose.translate(centerX, centerY + offsetY);
+        pose.translate(centerX, centerY);
         pose.scale(scale, scale);
         pose.translate(-centerX, -centerY);
         this.universalGuiAnimation$posePushed = true;
