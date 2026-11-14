@@ -1,0 +1,18 @@
+{
+  "name": "Universal GUI Animation - Java 25",
+  "image": "mcr.microsoft.com/devcontainers/java:1-25-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/gradle:1": {
+      "version": "9.5.1"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle"
+      ]
+    }
+  },
+  "postCreateCommand": "gradle --version"
+}
