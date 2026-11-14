@@ -24,7 +24,7 @@ public abstract class AbstractContainerScreenMixin {
     protected AbstractContainerMenu menu;
 
     @Unique
-    private static final long universalGuiAnimation$universalGuiAnimation$BOUNCE_DURATION_MS = 280L;
+    private static final long universalGuiAnimation$BOUNCE_DURATION_MS = 280L;
 
     @Unique
     private ItemStack universalGuiAnimation$lastCarried = ItemStack.EMPTY;
