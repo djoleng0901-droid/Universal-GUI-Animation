@@ -1,0 +1,9 @@
+{
+  "key.category.universal_gui_animation.main": "Universal GUI Animation",
+  "key.universal_gui_animation.open_config": "Open animation settings",
+  "screen.universal_gui_animation.config": "Universal GUI Animation Settings",
+  "screen.universal_gui_animation.squeeze": "Squeeze strength: %s",
+  "screen.universal_gui_animation.duration": "Entrance duration: %s ms",
+  "screen.universal_gui_animation.bounce": "Bounce strength: %s",
+  "screen.universal_gui_animation.hint": "Lower duration = faster entrance"
+}
