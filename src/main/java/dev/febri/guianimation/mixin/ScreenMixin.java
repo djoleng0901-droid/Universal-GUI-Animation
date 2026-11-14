@@ -10,13 +10,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Gives every screen a centered zoom-in entrance, growing from invisible
- * to its normal size with a subtle ease-out finish.
+ * Gives every screen a centered zoom-in entrance with a small cartoon-like bounce.
  */
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
     @Unique
-    private static final long universalGuiAnimation$ENTRANCE_DURATION_MS = 420L;
+    private static final long universalGuiAnimation$ENTRANCE_DURATION_MS = 480L;
 
     @Unique
     private long universalGuiAnimation$entranceStartedAt = -1L;
@@ -51,12 +50,12 @@ public abstract class ScreenMixin {
 
         float progress = (float) elapsed / universalGuiAnimation$ENTRANCE_DURATION_MS;
 
-        // Ease-out-back: starts at zero (invisible), zooms smoothly to full size,
-        // then settles with a very subtle overshoot.
+        // Ease-out-back: zoom from zero, pass the final size slightly,
+        // then settle at exactly 1.0 for a playful but restrained bounce.
         float inverse = progress - 1.0F;
         float eased = 1.0F
-                + 1.35F * inverse * inverse * inverse
-                + 0.35F * inverse * inverse;
+                + 2.4F * inverse * inverse * inverse
+                + 1.4F * inverse * inverse;
         float scale = Math.max(0.0F, eased);
 
         Screen screen = (Screen) (Object) this;
