@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "universal_gui_animation",
+  "version": "${version}",
+  "name": "Universal GUI Animation",
+  "description": "Subtle Vanilla+ animations for Minecraft GUI screens and HUD elements.",
+  "authors": [
+    "Febri"
+  ],
+  "contact": {
+    "sources": "https://github.com/djoleng0901-droid/Universal-GUI-Animation"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.febri.guianimation.GuiAnimationClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
