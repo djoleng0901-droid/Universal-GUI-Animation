@@ -17,9 +17,17 @@ public final class AnimationConfigScreen extends Screen {
     @Override
     protected void init() {
         int center = this.width / 2;
+        int styleY = this.height / 2 - 82;
         int squeezeY = this.height / 2 - 42;
         int durationY = this.height / 2 - 2;
         int bounceY = this.height / 2 + 38;
+
+        this.addRenderableWidget(Button.builder(Component.literal("<"), button ->
+                AnimationConfig.cycleAnimationStyle(-1))
+                .bounds(center - 118, styleY, 24, 20).build());
+        this.addRenderableWidget(Button.builder(Component.literal(">"), button ->
+                AnimationConfig.cycleAnimationStyle(1))
+                .bounds(center + 94, styleY, 24, 20).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("-"), button ->
                 AnimationConfig.adjustSqueeze(-0.02F))
@@ -50,7 +58,11 @@ public final class AnimationConfigScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         int center = this.width / 2;
-        graphics.centeredText(this.font, this.title, center, this.height / 2 - 92, 0xFFFFFFFF);
+        graphics.centeredText(this.font, this.title, center, this.height / 2 - 100, 0xFFFFFFFF);
+        graphics.centeredText(this.font,
+                Component.translatable("screen.universal_gui_animation.style",
+                        Component.translatable(AnimationConfig.getAnimationStyleTranslationKey())),
+                center, this.height / 2 - 74, 0xFFFFFFFF);
         graphics.centeredText(this.font,
                 Component.translatable("screen.universal_gui_animation.squeeze",
                         String.format(java.util.Locale.ROOT, "%.2f", AnimationConfig.getSqueezeStrength())),
