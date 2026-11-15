@@ -42,7 +42,6 @@ public final class AnimationConfig {
         current.bounceStrength = clamp(current.bounceStrength, 0.0F, 0.30F);
         current.durationMs = Math.max(250, Math.min(1000, current.durationMs));
         current.animationStyle = normalizeStyle(current.animationStyle);
-        save();
     }
 
     public static float getSqueezeStrength() { return current.squeezeStrength; }
