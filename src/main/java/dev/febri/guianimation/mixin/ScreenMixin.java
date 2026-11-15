@@ -80,6 +80,7 @@ public abstract class ScreenMixin {
         Screen screen = (Screen) (Object) this;
         float centerX = screen.width * 0.5F;
         float centerY = screen.height * 0.5F;
+        float pivotY = centerY;
         float offsetX = 0.0F;
         float offsetY = 0.0F;
         float rotation = 0.0F;
@@ -117,6 +118,31 @@ public abstract class ScreenMixin {
                 baseScaleX = tiltScale;
                 baseScaleY = tiltScale;
             }
+            case "FLIP" -> {
+                // A restrained horizontal flip-in; it does not affect the HUD.
+                baseScaleX = 0.10F + 0.90F * eased;
+                baseScaleY = 0.96F + 0.04F * eased;
+                rotation = (1.0F - eased) * (float) Math.toRadians(2.0D);
+            }
+            case "SWING" -> {
+                // Rotate around a point near the top edge, like a softly swinging panel.
+                pivotY = screen.height * 0.10F;
+                rotation = (1.0F - eased) * (float) Math.toRadians(-8.0D)
+                        + (float) Math.sin(progress * Math.PI * 2.2D)
+                        * remaining * (float) Math.toRadians(5.0D);
+                offsetY = (1.0F - eased) * screen.height * 0.035F;
+                baseScaleX = 0.98F + 0.02F * eased;
+                baseScaleY = 0.98F + 0.02F * eased;
+            }
+            case "ELASTIC" -> {
+                // A damped spring curve with a small overshoot independent of the classic bounce.
+                float spring = 1.0F - (float) Math.exp(-6.2F * progress)
+                        * (float) Math.cos(progress * 10.5F);
+                offsetY = (1.0F - spring) * screen.height * 0.95F;
+                float elasticScale = 0.96F + 0.04F * eased;
+                baseScaleX = elasticScale;
+                baseScaleY = elasticScale;
+            }
             case "CLASSIC" -> {
                 // Keep the original bottom-to-center motion mathematically unchanged.
                 offsetY = (1.0F - movement) * screen.height * 0.95F;
@@ -140,10 +166,10 @@ public abstract class ScreenMixin {
 
         Matrix3x2fStack pose = graphics.pose();
         pose.pushMatrix();
-        pose.translate(centerX + offsetX, centerY + offsetY);
+        pose.translate(centerX + offsetX, pivotY + offsetY);
         if (rotation != 0.0F) pose.rotate(rotation);
         pose.scale(baseScaleX, baseScaleY);
-        pose.translate(-centerX, -centerY);
+        pose.translate(-centerX, -pivotY);
         this.universalGuiAnimation$posePushed = true;
     }
 
