@@ -14,11 +14,16 @@ public final class AnimationConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir()
             .resolve("universal-gui-animation.json");
+    private static final String[] ANIMATION_STYLES = {
+            "CLASSIC", "POP", "SLIDE_LEFT", "SLIDE_RIGHT", "DROP", "TILT"
+    };
     private static AnimationConfig current = new AnimationConfig();
 
     public float squeezeStrength = 0.12F;
     public float bounceStrength = 0.12F;
     public int durationMs = 480;
+    /** CLASSIC preserves the original bottom-to-center entrance. */
+    public String animationStyle = "CLASSIC";
 
     private AnimationConfig() {}
 
@@ -36,11 +41,32 @@ public final class AnimationConfig {
         current.squeezeStrength = clamp(current.squeezeStrength, 0.0F, 0.30F);
         current.bounceStrength = clamp(current.bounceStrength, 0.0F, 0.30F);
         current.durationMs = Math.max(250, Math.min(1000, current.durationMs));
+        current.animationStyle = normalizeStyle(current.animationStyle);
+        save();
     }
 
     public static float getSqueezeStrength() { return current.squeezeStrength; }
     public static float getBounceStrength() { return current.bounceStrength; }
     public static int getDurationMs() { return current.durationMs; }
+    public static String getAnimationStyle() { return normalizeStyle(current.animationStyle); }
+
+    public static String getAnimationStyleTranslationKey() {
+        return "screen.universal_gui_animation.style." + getAnimationStyle().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    public static void cycleAnimationStyle(int direction) {
+        String style = getAnimationStyle();
+        int index = 0;
+        for (int i = 0; i < ANIMATION_STYLES.length; i++) {
+            if (ANIMATION_STYLES[i].equals(style)) {
+                index = i;
+                break;
+            }
+        }
+        int next = Math.floorMod(index + direction, ANIMATION_STYLES.length);
+        current.animationStyle = ANIMATION_STYLES[next];
+        save();
+    }
 
     public static void adjustSqueeze(float amount) {
         current.squeezeStrength = clamp(current.squeezeStrength + amount, 0.0F, 0.30F);
@@ -64,6 +90,14 @@ public final class AnimationConfig {
         } catch (IOException exception) {
             System.err.println("[Universal GUI Animation] Could not save config: " + exception.getMessage());
         }
+    }
+
+    private static String normalizeStyle(String style) {
+        if (style == null) return "CLASSIC";
+        for (String candidate : ANIMATION_STYLES) {
+            if (candidate.equalsIgnoreCase(style)) return candidate;
+        }
+        return "CLASSIC";
     }
 
     private static float clamp(float value, float min, float max) {
