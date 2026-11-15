@@ -2,8 +2,15 @@
   "key.category.universal_gui_animation.main": "Universal GUI Animation",
   "key.universal_gui_animation.open_config": "Open animation settings",
   "screen.universal_gui_animation.config": "Universal GUI Animation Settings",
+  "screen.universal_gui_animation.style": "Entrance style: %s",
+  "screen.universal_gui_animation.style.classic": "Classic (Bottom)",
+  "screen.universal_gui_animation.style.pop": "Pop",
+  "screen.universal_gui_animation.style.slide_left": "Slide Left",
+  "screen.universal_gui_animation.style.slide_right": "Slide Right",
+  "screen.universal_gui_animation.style.drop": "Drop (Top)",
+  "screen.universal_gui_animation.style.tilt": "Soft Tilt",
   "screen.universal_gui_animation.squeeze": "Squeeze strength: %s",
   "screen.universal_gui_animation.duration": "Entrance duration: %s ms",
   "screen.universal_gui_animation.bounce": "Bounce strength: %s",
-  "screen.universal_gui_animation.hint": "Lower duration = faster entrance"
+  "screen.universal_gui_animation.hint": "Use < and > to change entrance style"
 }
