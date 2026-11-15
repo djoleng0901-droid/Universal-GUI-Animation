@@ -3,7 +3,7 @@
   "id": "universal_gui_animation",
   "version": "${version}",
   "name": "Universal GUI Animation",
-  "description": "Smooth Vanilla+ bottom-to-center entrance animations for Minecraft GUI screens, with adjustable bounce and squeeze.",
+  "description": "Selectable Vanilla+ entrance animations for Minecraft GUI screens, with adjustable bounce and squeeze.",
   "authors": [
     "Febri"
   ],
