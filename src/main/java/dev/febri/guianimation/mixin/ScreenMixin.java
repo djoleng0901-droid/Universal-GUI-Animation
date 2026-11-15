@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Applies a restrained bottom-to-center entrance to screens.
+ * Applies selectable GUI-only entrance animations.
  * Mouse input is briefly held until the visual transform has settled so
  * clickable widgets never receive clicks at mismatched visual coordinates.
  */
@@ -68,32 +68,81 @@ public abstract class ScreenMixin {
 
         float remaining = 1.0F - progress;
         float eased = 1.0F - remaining * remaining * remaining;
-
-        // A damped, endpoint-safe wave adds a gentle spring-like settle.
         float bounceStrength = AnimationConfig.getBounceStrength();
         float bounceWave = (float) Math.sin(progress * Math.PI * 2.0D)
                 * remaining * bounceStrength * 0.55F;
         float movement = Math.max(-0.05F, Math.min(1.08F, eased + bounceWave));
 
-        // A short squash/stretch pulse is synchronized with the landing.
         float squeezeStrength = AnimationConfig.getSqueezeStrength();
         float impact = (float) Math.exp(-Math.pow((progress - 0.76F) / 0.105F, 2.0D));
-        float baseScale = 0.94F + 0.06F * eased;
         float squeeze = impact * squeezeStrength;
-        float scaleX = baseScale * (1.0F + squeeze * 0.28F);
-        float scaleY = baseScale * (1.0F - squeeze * 0.22F);
 
         Screen screen = (Screen) (Object) this;
         float centerX = screen.width * 0.5F;
         float centerY = screen.height * 0.5F;
+        float offsetX = 0.0F;
+        float offsetY = 0.0F;
+        float rotation = 0.0F;
+        float baseScaleX;
+        float baseScaleY;
 
-        // At the first frame the entire screen begins below the visible area.
-        float verticalOffset = (1.0F - movement) * screen.height * 0.95F;
+        String style = AnimationConfig.getAnimationStyle();
+        switch (style) {
+            case "POP" -> {
+                float popScale = 0.72F + 0.28F * eased + bounceWave * 0.18F;
+                baseScaleX = popScale;
+                baseScaleY = popScale;
+            }
+            case "SLIDE_LEFT" -> {
+                offsetX = -(1.0F - movement) * screen.width * 0.72F;
+                offsetY = -bounceWave * screen.height * 0.06F;
+                baseScaleX = 0.97F + 0.03F * eased;
+                baseScaleY = baseScaleX;
+            }
+            case "SLIDE_RIGHT" -> {
+                offsetX = (1.0F - movement) * screen.width * 0.72F;
+                offsetY = -bounceWave * screen.height * 0.06F;
+                baseScaleX = 0.97F + 0.03F * eased;
+                baseScaleY = baseScaleX;
+            }
+            case "DROP" -> {
+                offsetY = -(1.0F - movement) * screen.height * 0.88F;
+                baseScaleX = 0.97F + 0.03F * eased;
+                baseScaleY = baseScaleX;
+            }
+            case "TILT" -> {
+                rotation = (1.0F - eased) * (float) Math.toRadians(-4.0D)
+                        + bounceWave * 0.10F;
+                float tiltScale = 0.96F + 0.04F * eased;
+                baseScaleX = tiltScale;
+                baseScaleY = tiltScale;
+            }
+            case "CLASSIC" -> {
+                // Keep the original bottom-to-center motion mathematically unchanged.
+                offsetY = (1.0F - movement) * screen.height * 0.95F;
+                float baseScale = 0.94F + 0.06F * eased;
+                float classicSqueeze = squeeze * 1.0F;
+                baseScaleX = baseScale * (1.0F + classicSqueeze * 0.28F);
+                baseScaleY = baseScale * (1.0F - classicSqueeze * 0.22F);
+            }
+            default -> {
+                offsetY = (1.0F - movement) * screen.height * 0.95F;
+                float baseScale = 0.94F + 0.06F * eased;
+                baseScaleX = baseScale * (1.0F + squeeze * 0.28F);
+                baseScaleY = baseScale * (1.0F - squeeze * 0.22F);
+            }
+        }
+
+        if (!"CLASSIC".equals(style)) {
+            baseScaleX *= 1.0F + squeeze * 0.28F;
+            baseScaleY *= 1.0F - squeeze * 0.22F;
+        }
 
         Matrix3x2fStack pose = graphics.pose();
         pose.pushMatrix();
-        pose.translate(centerX, centerY + verticalOffset);
-        pose.scale(scaleX, scaleY);
+        pose.translate(centerX + offsetX, centerY + offsetY);
+        if (rotation != 0.0F) pose.rotate(rotation);
+        pose.scale(baseScaleX, baseScaleY);
         pose.translate(-centerX, -centerY);
         this.universalGuiAnimation$posePushed = true;
     }
