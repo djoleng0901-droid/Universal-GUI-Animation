@@ -92,7 +92,8 @@ public abstract class ScreenMixin {
     }
 
     @Unique
-    private void universalGuiAnimation$applyEntranceTransform(GuiGraphicsExtractor graphics) this.universalGuiAnimation$posePushed = false;
+    private void universalGuiAnimation$applyEntranceTransform(GuiGraphicsExtractor graphics) {
+        this.universalGuiAnimation$posePushed = false;
         if (this.universalGuiAnimation$isExcludedScreen()) return;
 
         long now = System.nanoTime() / 1_000_000L;
@@ -210,6 +211,7 @@ public abstract class ScreenMixin {
         pose.scale(baseScaleX, baseScaleY);
         pose.translate(-centerX, -pivotY);
         this.universalGuiAnimation$posePushed = true;
+    }
 
     @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("RETURN"), require = 1)
     private void universalGuiAnimation$restorePose(
