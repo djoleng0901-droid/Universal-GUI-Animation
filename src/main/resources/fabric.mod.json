@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "universal_gui_animation",
-  "version": "\${version}",
+  "version": "${version}",
   "name": "Universal GUI Animation",
   "description": "Smooth, complete Vanilla+ animations for Minecraft GUI screens, including mod-added screen elements.",
   "authors": ["Febri"],
