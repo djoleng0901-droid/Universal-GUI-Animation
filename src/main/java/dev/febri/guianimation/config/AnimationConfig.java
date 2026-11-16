@@ -15,18 +15,24 @@ public final class AnimationConfig {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir()
             .resolve("universal-gui-animation.json");
     private static final String[] ANIMATION_STYLES = {
-            "CLASSIC", "POP", "SLIDE_LEFT", "SLIDE_RIGHT", "DROP", "TILT",
+            "AUTO", "ZOOM", "CLASSIC", "POP", "SLIDE_LEFT", "SLIDE_RIGHT", "DROP", "TILT",
             "FLIP", "SWING", "ELASTIC"
     };
-    private static AnimationConfig current = new AnimationConfig();
+    private static AnimationConfig current = createDefault();
 
+    public int configVersion;
     public float squeezeStrength = 0.12F;
     public float bounceStrength = 0.12F;
-    public int durationMs = 480;
-    /** CLASSIC preserves the original bottom-to-center entrance. */
-    public String animationStyle = "CLASSIC";
+    public int durationMs = 260;
+    public String animationStyle = "AUTO";
 
     private AnimationConfig() {}
+
+    private static AnimationConfig createDefault() {
+        AnimationConfig config = new AnimationConfig();
+        config.configVersion = 2;
+        return config;
+    }
 
     public static void load() {
         if (!Files.exists(CONFIG_PATH)) {
@@ -35,7 +41,16 @@ public final class AnimationConfig {
         }
         try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
             AnimationConfig loaded = GSON.fromJson(reader, AnimationConfig.class);
-            if (loaded != null) current = loaded;
+            if (loaded != null) {
+                if (loaded.configVersion < 2) {
+                    if (loaded.animationStyle == null
+                            || loaded.animationStyle.equalsIgnoreCase("CLASSIC")) {
+                        loaded.animationStyle = "AUTO";
+                    }
+                    loaded.configVersion = 2;
+                }
+                current = loaded;
+            }
         } catch (IOException | RuntimeException exception) {
             System.err.println("[Universal GUI Animation] Could not load config: " + exception.getMessage());
         }
@@ -43,6 +58,7 @@ public final class AnimationConfig {
         current.bounceStrength = clamp(current.bounceStrength, 0.0F, 0.30F);
         current.durationMs = Math.max(250, Math.min(1000, current.durationMs));
         current.animationStyle = normalizeStyle(current.animationStyle);
+        save();
     }
 
     public static float getSqueezeStrength() { return current.squeezeStrength; }
@@ -93,11 +109,11 @@ public final class AnimationConfig {
     }
 
     private static String normalizeStyle(String style) {
-        if (style == null) return "CLASSIC";
+        if (style == null) return "AUTO";
         for (String candidate : ANIMATION_STYLES) {
             if (candidate.equalsIgnoreCase(style)) return candidate;
         }
-        return "CLASSIC";
+        return "AUTO";
     }
 
     private static float clamp(float value, float min, float max) {

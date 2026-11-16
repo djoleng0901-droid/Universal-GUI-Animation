@@ -10,19 +10,35 @@ A client-side Fabric mod for Minecraft Java Edition 26.2, focused on smooth, sub
 - Fabric API: 0.161.0+26.2
 - Mod ID: universal_gui_animation
 
-## GUI entrance animation
+## Automatic screen animations
 
-Every newly opened GUI screen animates upward from below its resting position into the center. The transition uses cubic ease-out movement, a restrained damped bounce, and a subtle squash-and-stretch accent. It affects screens such as inventory, containers, crafting, pause, and title menus. It does not animate the in-game HUD.
+The default Automatic style animates the complete screen render pass, including widgets and elements drawn by third-party screen subclasses:
+
+- Main menu: smooth entrance from below, with a tiny overshoot before settling at the center.
+- Inventory and every vanilla container (chests, crafting, furnace, etc.): subtle centered zoom with a very small bounce.
+- For inventory/container screens, the transform starts after the dimmed world background is extracted, so the white container panel and its contents animate while the black/dim background stays fixed.
+- Settings, pause menus, Mod Menu, and other GUI screens: the same subtle centered zoom.
+- Mod-added screen elements, buttons, lists, icons, labels, slots, and deferred tooltips are included in the same screen transform.
+- The world/panorama background and in-game HUD are not transformed.
+- Terrain-loading screens and saving/progress indicators are excluded and remain visually unchanged.
+
+The animation is applied around the non-overridable screen render wrapper, not only the base Screen.extractRenderState method. This is important for mod screens that draw additional content after calling their superclass.
 
 ## In-game settings
 
 Press F8 to open the mod settings screen. The key can be rebound in Options > Controls > Key Binds.
 
-Settings are saved to config/universal-gui-animation.json and can be changed in-game:
+Settings are saved to config/universal-gui-animation.json:
 
+- Entrance style: Automatic, Subtle Zoom, Classic, Pop, Slide Left/Right, Drop, Soft Tilt, Flip In, Soft Swing, or Elastic Spring.
 - Squeeze strength: 0.00–0.30
-- Entrance duration: 250–1000 ms (lower is faster)
+- Entrance duration: 250–1000 ms
 - Bounce strength: 0.00–0.30
+
+## Current version
+
+- Mod version: 0.10.2
+- Container panel entrance transform is applied after background extraction, keeping the dimmed background static.
 
 ## Build
 

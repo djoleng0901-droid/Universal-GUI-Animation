@@ -3,22 +3,16 @@
   "id": "universal_gui_animation",
   "version": "${version}",
   "name": "Universal GUI Animation",
-  "description": "Selectable Vanilla+ entrance animations for Minecraft GUI screens, with adjustable bounce and squeeze.",
-  "authors": [
-    "Febri"
-  ],
+  "description": "Smooth, complete Vanilla+ animations for Minecraft GUI screens, including mod-added screen elements.",
+  "authors": ["Febri"],
   "contact": {
     "sources": "https://github.com/djoleng0901-droid/Universal-GUI-Animation"
   },
   "license": "MIT",
   "environment": "client",
-  "mixins": [
-    "universal-gui-animation.mixins.json"
-  ],
+  "mixins": ["universal-gui-animation.mixins.json"],
   "entrypoints": {
-    "client": [
-      "dev.febri.guianimation.GuiAnimationClient"
-    ]
+    "client": ["dev.febri.guianimation.GuiAnimationClient"]
   },
   "depends": {
     "fabricloader": ">=0.19.3",

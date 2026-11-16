@@ -12,11 +12,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Applies selectable GUI-only entrance animations.
- * Mouse input is briefly held until the visual transform has settled so
- * clickable widgets never receive clicks at mismatched visual coordinates.
- */
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
     @Unique private long universalGuiAnimation$entranceStartedAt = -1L;
@@ -28,8 +23,19 @@ public abstract class ScreenMixin {
     }
 
     @Unique
+    private boolean universalGuiAnimation$isExcludedScreen() {
+        String name = ((Screen) (Object) this).getClass().getSimpleName();
+        return name.equals("ReceivingLevelScreen")
+                || name.equals("LevelLoadingScreen")
+                || name.equals("ProgressScreen")
+                || name.equals("LoadingOverlay")
+                || name.equals("SavingLevelScreen");
+    }
+
+    @Unique
     private boolean universalGuiAnimation$isAnimating() {
-        if (this.universalGuiAnimation$entranceStartedAt < 0L) return false;
+        if (this.universalGuiAnimation$isExcludedScreen()
+                || this.universalGuiAnimation$entranceStartedAt < 0L) return false;
         long elapsed = Math.max(0L,
                 System.nanoTime() / 1_000_000L - this.universalGuiAnimation$entranceStartedAt);
         return elapsed < AnimationConfig.getDurationMs();
@@ -43,26 +49,65 @@ public abstract class ScreenMixin {
         return Math.min(1.0F, (float) elapsed / (float) AnimationConfig.getDurationMs());
     }
 
-    @ModifyVariable(method = "extractRenderState", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    @ModifyVariable(
+            method = "extractRenderStateWithTooltipAndSubtitles",
+            at = @At("HEAD"), argsOnly = true, ordinal = 0
+    )
     private int universalGuiAnimation$hideHoverX(int mouseX) {
         return this.universalGuiAnimation$isAnimating() ? -10_000 : mouseX;
     }
 
-    @ModifyVariable(method = "extractRenderState", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    @ModifyVariable(
+            method = "extractRenderStateWithTooltipAndSubtitles",
+            at = @At("HEAD"), argsOnly = true, ordinal = 1
+    )
     private int universalGuiAnimation$hideHoverY(int mouseY) {
         return this.universalGuiAnimation$isAnimating() ? -10_000 : mouseY;
     }
 
-    @Inject(method = "extractRenderState", at = @At("HEAD"))
+    @Inject(
+            method = "extractRenderStateWithTooltipAndSubtitles",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screens/Screen;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
+                    shift = At.Shift.BEFORE
+            ),
+            require = 1
+    )
     private void universalGuiAnimation$applyEntrance(
             GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
     ) {
+        if ((Object) this instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) return;
+        this.universalGuiAnimation$applyEntranceTransform(graphics);
+    }
+
+
+    @Inject(
+            method = "extractRenderStateWithTooltipAndSubtitles",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screens/Screen;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
+                    shift = At.Shift.BEFORE
+            ),
+            require = 1
+    )
+    private void universalGuiAnimation$applyContainerEntrance(
+            GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
+    ) {
+        if ((Object) this instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) {
+            this.universalGuiAnimation$applyEntranceTransform(graphics);
+        }
+    }
+
+    @Unique
+    private void universalGuiAnimation$applyEntranceTransform(GuiGraphicsExtractor graphics) {
         this.universalGuiAnimation$posePushed = false;
+        if (this.universalGuiAnimation$isExcludedScreen()) return;
+
         long now = System.nanoTime() / 1_000_000L;
         if (this.universalGuiAnimation$entranceStartedAt < 0L) {
             this.universalGuiAnimation$entranceStartedAt = now;
         }
-
         float progress = this.universalGuiAnimation$progress();
         if (progress >= 1.0F) return;
 
@@ -72,7 +117,6 @@ public abstract class ScreenMixin {
         float bounceWave = (float) Math.sin(progress * Math.PI * 2.0D)
                 * remaining * bounceStrength * 0.55F;
         float movement = Math.max(-0.05F, Math.min(1.08F, eased + bounceWave));
-
         float squeezeStrength = AnimationConfig.getSqueezeStrength();
         float impact = (float) Math.exp(-Math.pow((progress - 0.76F) / 0.105F, 2.0D));
         float squeeze = impact * squeezeStrength;
@@ -87,8 +131,19 @@ public abstract class ScreenMixin {
         float baseScaleX;
         float baseScaleY;
 
-        String style = AnimationConfig.getAnimationStyle();
+        String configuredStyle = AnimationConfig.getAnimationStyle();
+        String style = configuredStyle.equals("AUTO")
+                ? (screen.getClass().getSimpleName().equals("TitleScreen") ? "CLASSIC" : "ZOOM")
+                : configuredStyle;
+
         switch (style) {
+            case "ZOOM" -> {
+                float zoomBounce = (float) Math.sin(progress * Math.PI)
+                        * remaining * bounceStrength * 0.21F;
+                float zoomScale = 0.92F + 0.08F * eased + zoomBounce;
+                baseScaleX = zoomScale * (1.0F + squeeze * 0.10F);
+                baseScaleY = zoomScale * (1.0F - squeeze * 0.08F);
+            }
             case "POP" -> {
                 float popScale = 0.72F + 0.28F * eased + bounceWave * 0.18F;
                 baseScaleX = popScale;
@@ -119,13 +174,11 @@ public abstract class ScreenMixin {
                 baseScaleY = tiltScale;
             }
             case "FLIP" -> {
-                // A restrained horizontal flip-in; it does not affect the HUD.
                 baseScaleX = 0.10F + 0.90F * eased;
                 baseScaleY = 0.96F + 0.04F * eased;
                 rotation = (1.0F - eased) * (float) Math.toRadians(2.0D);
             }
             case "SWING" -> {
-                // Rotate around a point near the top edge, like a softly swinging panel.
                 pivotY = screen.height * 0.10F;
                 rotation = (1.0F - eased) * (float) Math.toRadians(-8.0D)
                         + (float) Math.sin(progress * Math.PI * 2.2D)
@@ -135,7 +188,6 @@ public abstract class ScreenMixin {
                 baseScaleY = 0.98F + 0.02F * eased;
             }
             case "ELASTIC" -> {
-                // A damped spring curve with a small overshoot independent of the classic bounce.
                 float spring = 1.0F - (float) Math.exp(-6.2F * progress)
                         * (float) Math.cos(progress * 10.5F);
                 offsetY = (1.0F - spring) * screen.height * 0.95F;
@@ -144,22 +196,18 @@ public abstract class ScreenMixin {
                 baseScaleY = elasticScale;
             }
             case "CLASSIC" -> {
-                // Keep the original bottom-to-center motion mathematically unchanged.
-                offsetY = (1.0F - movement) * screen.height * 0.95F;
-                float baseScale = 0.94F + 0.06F * eased;
-                float classicSqueeze = squeeze * 1.0F;
-                baseScaleX = baseScale * (1.0F + classicSqueeze * 0.28F);
-                baseScaleY = baseScale * (1.0F - classicSqueeze * 0.22F);
-            }
-            default -> {
                 offsetY = (1.0F - movement) * screen.height * 0.95F;
                 float baseScale = 0.94F + 0.06F * eased;
                 baseScaleX = baseScale * (1.0F + squeeze * 0.28F);
                 baseScaleY = baseScale * (1.0F - squeeze * 0.22F);
             }
+            default -> {
+                baseScaleX = 0.92F + 0.08F * eased;
+                baseScaleY = baseScaleX;
+            }
         }
 
-        if (!"CLASSIC".equals(style)) {
+        if (!"CLASSIC".equals(style) && !"ZOOM".equals(style)) {
             baseScaleX *= 1.0F + squeeze * 0.28F;
             baseScaleY *= 1.0F - squeeze * 0.22F;
         }
@@ -173,7 +221,7 @@ public abstract class ScreenMixin {
         this.universalGuiAnimation$posePushed = true;
     }
 
-    @Inject(method = "extractRenderState", at = @At("RETURN"))
+    @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("RETURN"), require = 1)
     private void universalGuiAnimation$restorePose(
             GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
     ) {

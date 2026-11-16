@@ -3,6 +3,8 @@
   "key.universal_gui_animation.open_config": "Open animation settings",
   "screen.universal_gui_animation.config": "Universal GUI Animation Settings",
   "screen.universal_gui_animation.style": "Entrance style: %s",
+  "screen.universal_gui_animation.style.auto": "Automatic (recommended)",
+  "screen.universal_gui_animation.style.zoom": "Subtle Zoom",
   "screen.universal_gui_animation.style.classic": "Classic (Bottom)",
   "screen.universal_gui_animation.style.pop": "Pop",
   "screen.universal_gui_animation.style.slide_left": "Slide Left",
