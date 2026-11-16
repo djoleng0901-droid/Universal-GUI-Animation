@@ -15,7 +15,8 @@ public final class AnimationConfig {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir()
             .resolve("universal-gui-animation.json");
     private static final String[] ANIMATION_STYLES = {
-            "CLASSIC", "POP", "SLIDE_LEFT", "SLIDE_RIGHT", "DROP", "TILT"
+            "CLASSIC", "POP", "SLIDE_LEFT", "SLIDE_RIGHT", "DROP", "TILT",
+            "FLIP", "SWING", "ELASTIC"
     };
     private static AnimationConfig current = new AnimationConfig();
 
