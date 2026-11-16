@@ -82,7 +82,15 @@ public abstract class ScreenMixin {
     }
 
 
-    @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("HEAD"), require = 1)
+    @Inject(
+            method = "extractRenderStateWithTooltipAndSubtitles",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screens/Screen;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
+                    shift = At.Shift.BEFORE
+            ),
+            require = 1
+    )
     private void universalGuiAnimation$applyContainerEntrance(
             GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
     ) {
