@@ -71,7 +71,8 @@ public abstract class ScreenMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/screens/Screen;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
                     shift = At.Shift.BEFORE
-            )
+            ),
+            require = 1
     )
     private void universalGuiAnimation$applyEntrance(
             GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
@@ -196,7 +197,7 @@ public abstract class ScreenMixin {
         this.universalGuiAnimation$posePushed = true;
     }
 
-    @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("RETURN"))
+    @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("RETURN"), require = 1)
     private void universalGuiAnimation$restorePose(
             GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
     ) {
