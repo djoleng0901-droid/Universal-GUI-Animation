@@ -35,6 +35,11 @@ Settings are saved to config/universal-gui-animation.json:
 - Entrance duration: 250–1000 ms
 - Bounce strength: 0.00–0.30
 
+## Current version
+
+- Mod version: 0.10.2
+- Container panel entrance transform is applied after background extraction, keeping the dimmed background static.
+
 ## Build
 
 Run gradle build --no-daemon. The output JAR is in build/libs/.
