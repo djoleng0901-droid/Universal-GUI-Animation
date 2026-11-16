@@ -16,6 +16,7 @@ The default Automatic style animates the complete screen render pass, including 
 
 - Main menu: smooth entrance from below, with a tiny overshoot before settling at the center.
 - Inventory and every vanilla container (chests, crafting, furnace, etc.): subtle centered zoom with a very small bounce.
+- For inventory/container screens, the transform starts after the dimmed world background is extracted, so the white container panel and its contents animate while the black/dim background stays fixed.
 - Settings, pause menus, Mod Menu, and other GUI screens: the same subtle centered zoom.
 - Mod-added screen elements, buttons, lists, icons, labels, slots, and deferred tooltips are included in the same screen transform.
 - The world/panorama background and in-game HUD are not transformed.
