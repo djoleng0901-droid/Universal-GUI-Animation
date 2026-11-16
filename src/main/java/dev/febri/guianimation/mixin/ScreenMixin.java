@@ -77,7 +77,22 @@ public abstract class ScreenMixin {
     private void universalGuiAnimation$applyEntrance(
             GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
     ) {
-        this.universalGuiAnimation$posePushed = false;
+        if ((Object) this instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) return;
+        this.universalGuiAnimation$applyEntranceTransform(graphics);
+    }
+
+
+    @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("HEAD"), require = 1)
+    private void universalGuiAnimation$applyContainerEntrance(
+            GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci
+    ) {
+        if ((Object) this instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) {
+            this.universalGuiAnimation$applyEntranceTransform(graphics);
+        }
+    }
+
+    @Unique
+    private void universalGuiAnimation$applyEntranceTransform(GuiGraphicsExtractor graphics) this.universalGuiAnimation$posePushed = false;
         if (this.universalGuiAnimation$isExcludedScreen()) return;
 
         long now = System.nanoTime() / 1_000_000L;
@@ -195,7 +210,6 @@ public abstract class ScreenMixin {
         pose.scale(baseScaleX, baseScaleY);
         pose.translate(-centerX, -pivotY);
         this.universalGuiAnimation$posePushed = true;
-    }
 
     @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("RETURN"), require = 1)
     private void universalGuiAnimation$restorePose(
